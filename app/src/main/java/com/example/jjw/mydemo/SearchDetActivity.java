@@ -1,0 +1,118 @@
+package com.example.jjw.mydemo;
+
+import android.content.Context;
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.TextView;
+import android.widget.ViewFlipper;
+
+public class SearchDetActivity extends AppCompatActivity {
+    private static final int SWIPE_MIN_DISTANCE = 120;
+    private static final int SWIPE_THRESHOLD_VELOCITY = 200;
+    private ViewFlipper mViewFlipper;
+    private Animation.AnimationListener mAnimationListener;
+    private Context mContext;
+
+    //나중에 객체로 변환예정
+    private String city;
+    private String desc;
+
+    //TextView
+    TextView mPlaceName;
+    TextView mPlaceDesc;
+
+
+    // private final GestureDetector detector = new GestureDetector(new SwipeGestureDetector());     //더 좋은게 나왔으니 사용하지 말라는 것..
+    private final GestureDetector detector = new GestureDetector(new SwipeGestureDetector());
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_search_det);
+
+        //Burndle
+        Bundle initBurndle = getIntent().getExtras();
+        //아래 부분 체크 필요 getExtras
+        if(initBurndle != null)
+        {
+            city = initBurndle.getString("city");
+            desc = initBurndle.getString("desc");
+        }
+
+        mContext = this;
+        //ViewFlipper 참고
+        mViewFlipper = (ViewFlipper)this.findViewById(R.id.viewFlipper);
+        mViewFlipper.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(final View view, final MotionEvent event) {
+                detector.onTouchEvent(event);
+                return true;
+            }
+        });
+
+        mPlaceName = (TextView)this.findViewById(R.id.txtSearchDetPlaceName);
+        mPlaceDesc = (TextView)this.findViewById(R.id.txtSearchDetPlaceDesc);
+
+        mPlaceName.setText(city);
+        mPlaceDesc.setText(desc);
+/*
+        Animation showIn = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
+        mViewFlipper.setAnimation(showIn);
+
+        mViewFlipper.setOutAnimation(this, android.R.anim.slide_out_right);
+*/
+
+//animation listener
+        mAnimationListener = new Animation.AnimationListener() {
+            public void onAnimationStart(Animation animation) {
+                //animation started event
+            }
+
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            public void onAnimationEnd(Animation animation) {
+                //TODO animation stopped event
+            }
+        };
+
+
+    }
+
+
+    class SwipeGestureDetector extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            try {
+                // right to left swipe
+                if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                    System.out.println("-----------------GestureDector!1-------------");
+                    mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(mContext, android.R.anim.slide_in_left));
+                    mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(mContext, android.R.anim.slide_out_right));
+                    // controlling animation
+                    mViewFlipper.getInAnimation().setAnimationListener(mAnimationListener);
+                    mViewFlipper.showNext();
+                    return true;
+                } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                    System.out.println("-----------------GestureDector!2-------------");
+                    mViewFlipper.setInAnimation(AnimationUtils.loadAnimation(mContext, android.R.anim.slide_in_left));
+                    mViewFlipper.setOutAnimation(AnimationUtils.loadAnimation(mContext, android.R.anim.slide_out_right));
+                    // controlling animation
+                    mViewFlipper.getInAnimation().setAnimationListener(mAnimationListener);
+                    mViewFlipper.showPrevious();
+                    return true;
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return false;
+        }
+    }
+}
